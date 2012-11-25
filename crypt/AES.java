@@ -1,4 +1,4 @@
-package ssf;
+package crypt;
 import java.security.*;
 
 import javax.crypto.*;
