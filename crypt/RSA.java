@@ -6,11 +6,11 @@ import java.security.NoSuchAlgorithmException;
 
 public class RSA {
 	
-	  public static KeyPair generateKeyPair() {
+	  public static KeyPair generateKeyPair(int keysize) {
 		  	KeyPair keyPair = null;
 		    try {
 		      KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		      gen.initialize(1024);
+		      gen.initialize(keysize);
 		      keyPair = gen.generateKeyPair();
 		    } catch (NoSuchAlgorithmException e) {
 				// TODO Auto-generated catch block

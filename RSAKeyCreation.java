@@ -12,7 +12,7 @@ public class RSAKeyCreation {
 			System.out.println("Owner of keypair: "+args[0]);
 			String OwnerName = args[0];
 			System.out.println("Generating keys");
-			KeyPair keys = RSA.generateKeyPair();
+			KeyPair keys = RSA.generateKeyPair(1024);
 			try {
 				System.out.println("Writing public keyfile. Keyformat: "+keys.getPublic().getFormat());
 				byte[] pubKey = keys.getPublic().getEncoded();
