@@ -5,7 +5,8 @@ import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
-import ssf.AES;
+import crypt.AES;
+
 
 public class Tests {
 
