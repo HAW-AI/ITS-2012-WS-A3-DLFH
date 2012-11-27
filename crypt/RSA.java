@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -15,8 +14,6 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import javax.crypto.SecretKey;
 
 public class RSA {
 	
@@ -33,7 +30,8 @@ public class RSA {
 			return keyPair;
 		  }
 	  
-	  public static void readPubKeyFile(String pubKeyPath){
+	  public static PublicKey readPubKeyFile(String pubKeyPath){
+		  	PublicKey pubKey = null;
 			try {
 				File pubKeyFile = new File(pubKeyPath);
 				FileInputStream pubKeyFis = new FileInputStream(pubKeyFile);
@@ -54,7 +52,7 @@ public class RSA {
 				
 				X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(KeyBuffer);
 				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-				PublicKey pubKey = keyFactory.generatePublic(pubKeySpec);
+				pubKey = keyFactory.generatePublic(pubKeySpec);
 				System.out.println("Pubic key read:"+pubKey.toString());
 			} catch (NoSuchAlgorithmException e) {
 				System.out.println("Algorithm not found");
@@ -69,10 +67,12 @@ public class RSA {
 				System.out.println("An error occurred while reading public key file");
 				//e.printStackTrace();
 			}
+			return pubKey;
 	  }
 	  
-	  public static void readPrvKeyFile(String prvKeyPath){
-			try {
+	  public static PrivateKey readPrvKeyFile(String prvKeyPath){
+		  PrivateKey prvKey = null;
+		  try {
 				File prvKeyFile = new File(prvKeyPath);
 				FileInputStream prvKeyFis = new FileInputStream(prvKeyFile);
 				DataInputStream prvKeyDis = new DataInputStream(prvKeyFis);
@@ -91,7 +91,7 @@ public class RSA {
 				
 				PKCS8EncodedKeySpec prvKeySpec = new PKCS8EncodedKeySpec(KeyBuffer);
 				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-				PrivateKey prvKey = keyFactory.generatePrivate(prvKeySpec);
+				prvKey = keyFactory.generatePrivate(prvKeySpec);
 				System.out.println("Pubic key read:"+prvKey.toString());
 			} catch (NoSuchAlgorithmException e) {
 				System.out.println("Algorithm not found");
@@ -106,5 +106,6 @@ public class RSA {
 				System.out.println("An error occurred while reading public key file");
 				//e.printStackTrace();
 			}
+			return prvKey;
 	  }
 }
