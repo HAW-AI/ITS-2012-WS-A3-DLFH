@@ -4,22 +4,43 @@ import java.security.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
-/**
- * Dieses Beispiel zeigt die Verwendung der Klasse Cipher zum
- * Verschlüsseln von beliebigen Daten.
- */
 public class AES {
-	int keyLength;
+	SecretKey skey;
 	
-	private AES (int keyLength){
-		this.keyLength = keyLength;
+	
+	private AES (SecretKey skey){
+		this.skey = skey;
 	}
 
-	public static AES create(int keyLength){
-		return new AES(keyLength);
+	public static AES create(int keysize){
+		SecretKey skey = generateKey(keysize);
+		return new AES(skey);
+	}
+
+	public static AES create(SecretKey skey){
+		return new AES(skey);
 	}
 	
-	public byte[] encrypt(String plainData, SecretKey skey){
+	public SecretKey getSkey(){
+		return this.skey;
+	}
+	
+	private static SecretKey generateKey(int keysize){
+	      // AES-Schluessel generieren
+	      KeyGenerator kg;
+	      SecretKey skey = null;
+		try {
+		  kg = KeyGenerator.getInstance("AES");
+	      kg.init(keysize);
+	      skey = kg.generateKey();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return skey;
+	}
+	
+	public byte[] encrypt(String plainData){
       // Cipher-Objekt erzeugen und initialisieren mit AES-Algorithmus und Parametern
       // SUN-Default ist ECB-Modus (damit kein IV übergeben werden muss) und PKCS5Padding
       // Für Default-Parameter genügt: Cipher.getInstance("AES")
@@ -113,25 +134,10 @@ public class AES {
 		return new String(decData);
 
 	}
-	
-	public SecretKey generateKey(){
-	      // AES-Schlüssel generieren
-	      KeyGenerator kg;
-	      SecretKey skey = null;
-		try {
-		  kg = KeyGenerator.getInstance("AES");
-	      kg.init(this.keyLength);
-	      skey = kg.generateKey();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return skey;
-	}
 
-	public byte[] keyToByteArray(SecretKey skey){
-		return skey.getEncoded();
-	}
+//	public byte[] keyToByteArray(SecretKey skey){
+//		return skey.getEncoded();
+//	}
 	
 //	private byte[] concatByteArr(byte[] that, byte[] other){
 //		byte[] result = new byte[that.length + other.length];
