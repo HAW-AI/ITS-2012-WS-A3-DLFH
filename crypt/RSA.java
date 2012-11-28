@@ -25,6 +25,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class RSA {
 	
@@ -219,22 +220,34 @@ public class RSA {
 		    return signature;
 	 }
 	 
+	public boolean verifyAesKey(byte[] skey ,byte[] signature) {
+	    boolean result = false;
+		try {
+		Signature AesSig = Signature.getInstance("SHA1withRSA");
+		AesSig.initVerify(pubKey);
+		AesSig.update(skey);
+		result = AesSig.verify(signature);
+		} catch (SignatureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+	 
 	 public byte[] encryptAesKey(SecretKey skey){
-
-	      Cipher cipher;
-	      byte[] encData = null; //TODO i don not like null
-	      //byte[] encRest = null; //TODO i don not like null
+	    Cipher cipher;
+	    byte[] encData = null;
 		try {
 			cipher = Cipher.getInstance("RSA");
-
-	      // Initialisierung
 			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-	      
-	      // die zu schützenden Daten
-	      byte[] plain = skey.getEncoded();
-
-	      encData = cipher.doFinal(plain);
-
+			byte[] plain = skey.getEncoded();
+			encData = cipher.doFinal(plain);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -251,14 +264,33 @@ public class RSA {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		    // und angezeigt
-		    System.out.println("Verschlüsselte Daten: "+new String(encData));
-		    // zeigt den Algorithmus des Schlüssels
-		    System.out.println("Schlüsselalgorithmus: "+skey.getAlgorithm());
-		    // zeigt das Format des Schlüssels
-		    System.out.println("Schlüsselformat: "+skey.getFormat());
-
-	      return encData; //TODO +encRest
+	    return encData;
 	 }
+
+	public SecretKey decryptAesKey(byte[] encSkey) {
+		Cipher cipher;
+	      SecretKey decSkey = null;
+		try {
+			cipher = Cipher.getInstance("RSA");
+			cipher.init(Cipher.DECRYPT_MODE, prvKey);
+			byte[] decSkeyByte = cipher.doFinal(encSkey);
+			decSkey = new SecretKeySpec(decSkeyByte, "AES");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return decSkey;
+	}
 }
