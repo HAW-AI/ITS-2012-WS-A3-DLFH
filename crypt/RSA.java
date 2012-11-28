@@ -1,25 +1,56 @@
 package crypt;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
 public class RSA {
+	
+	PublicKey pubKey;
+	PrivateKey prvKey;
+
+	private RSA(PublicKey pubKey, PrivateKey prvKey){
+		this.pubKey = pubKey;
+		this.prvKey = prvKey;
+	}
+	
+	public static RSA create(int keysize){
+		KeyPair keypair = generateKeyPair(keysize);
+		return new RSA(keypair.getPublic(), keypair.getPrivate());
+	}
+	
+	public static RSA create(String pubKeyPath, String prvKeyPath){
+		PublicKey pubKey = readPubKeyFile(pubKeyPath);
+		PrivateKey prvKey = readPrvKeyFile(prvKeyPath);
+		return new RSA(pubKey, prvKey);
+	}
 	
 	  public static KeyPair generateKeyPair(int keysize) {
 		  	KeyPair keyPair = null;
 		    try {
+		    	System.out.println("Generating keys");
 		      KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
 		      gen.initialize(keysize);
 		      keyPair = gen.generateKeyPair();
@@ -30,7 +61,7 @@ public class RSA {
 			return keyPair;
 		  }
 	  
-	  public static PublicKey readPubKeyFile(String pubKeyPath){
+	  private static PublicKey readPubKeyFile(String pubKeyPath){
 		  	PublicKey pubKey = null;
 			try {
 				File pubKeyFile = new File(pubKeyPath);
@@ -70,7 +101,7 @@ public class RSA {
 			return pubKey;
 	  }
 	  
-	  public static PrivateKey readPrvKeyFile(String prvKeyPath){
+	  private static PrivateKey readPrvKeyFile(String prvKeyPath){
 		  PrivateKey prvKey = null;
 		  try {
 				File prvKeyFile = new File(prvKeyPath);
@@ -108,4 +139,126 @@ public class RSA {
 			}
 			return prvKey;
 	  }
+	  
+	  public void writeKeysToFile(String pubKeyPath, String prvKeyPath, String ownerName){
+		  writePublicKey(pubKeyPath, ownerName);
+		  writePrivateKey(prvKeyPath, ownerName);
+	  }
+	  
+	  private void writePublicKey(String pubKeyPath, String ownerName){
+		try {
+			System.out.println("Writing public keyfile. Keyformat: "+this.pubKey.getFormat());
+			System.out.println(this.pubKey);
+			byte[] pubKey = this.pubKey.getEncoded();
+			File pubKeyFile = new File(pubKeyPath+ownerName+".pub");
+			FileOutputStream pubKeyFos = new FileOutputStream(pubKeyFile);
+			DataOutputStream pubKeyDos = new DataOutputStream(pubKeyFos);
+			pubKeyDos.writeInt(ownerName.length());
+			pubKeyDos.writeBytes(ownerName);
+			pubKeyDos.writeInt(pubKey.length);
+			System.out.println("Key length: "+pubKey.length);
+			pubKeyDos.write(pubKey);
+			pubKeyDos.close();
+			System.out.println("Keyfiles successfully created");
+		} catch (FileNotFoundException e) {
+			System.out.println("Public key file could not be created");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("An error occurred while writing public key file");
+			//e.printStackTrace();
+		}
+	  }
+	  
+	 private void writePrivateKey(String prvKeyPath, String ownerName){
+		 try {
+		 System.out.println("Writing private keyfile. Keyformat "+this.prvKey.getFormat());
+			System.out.println(this.prvKey);
+			byte[] prvKey = this.prvKey.getEncoded();
+			File prvKeyFile = new File(prvKeyPath+ownerName+".prv");
+			FileOutputStream prvKeyFos = new FileOutputStream(prvKeyFile);
+			DataOutputStream prvKeyDos = new DataOutputStream(prvKeyFos);
+			prvKeyDos.writeInt(ownerName.length());
+			prvKeyDos.writeBytes(ownerName);
+			prvKeyDos.writeInt(prvKey.length);
+			System.out.println("Key length: "+prvKey.length);
+			prvKeyDos.write(prvKey);
+			prvKeyDos.close();
+			System.out.println("Keyfile successfully created");
+		} catch (FileNotFoundException e) {
+			System.out.println("Private key file could not be created");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("An error occurred while writing private key file");
+			//e.printStackTrace();
+		}
+	 }
+	  
+	 public byte[] signAesKey(SecretKey skey){
+		    // als erstes erzeugen wir die Signatur
+		    Signature AesSig = null;
+		    byte[] signature = null;
+		    try {
+		      AesSig = Signature.getInstance("SHA1withAES");
+		    } catch (NoSuchAlgorithmException ex) {
+		    	System.out.println("Algorithm not found");
+		    }
+
+		    try {
+		      // zum Signieren benötigen wir den geheimen Schlüssel
+		    	AesSig.initSign(prvKey);
+		    } catch (InvalidKeyException ex) {
+		      System.out.println("Key is invalid");
+		    }
+
+		    try {
+		      AesSig.update(skey.getEncoded());
+		      signature = AesSig.sign();
+		    } catch (SignatureException ex) {
+		      System.out.println("An error occurred while signing a secret key ");
+		    }
+		    return signature;
+	 }
+	 
+	 public byte[] encryptAesKey(SecretKey skey){
+
+	      Cipher cipher;
+	      byte[] encData = null; //TODO i don not like null
+	      //byte[] encRest = null; //TODO i don not like null
+		try {
+			cipher = Cipher.getInstance("RSA");
+
+	      // Initialisierung
+			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+	      
+	      // die zu schützenden Daten
+	      byte[] plain = skey.getEncoded();
+
+	      encData = cipher.doFinal(plain);
+
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		    // und angezeigt
+		    System.out.println("Verschlüsselte Daten: "+new String(encData));
+		    // zeigt den Algorithmus des Schlüssels
+		    System.out.println("Schlüsselalgorithmus: "+skey.getAlgorithm());
+		    // zeigt das Format des Schlüssels
+		    System.out.println("Schlüsselformat: "+skey.getFormat());
+
+	      return encData; //TODO +encRest
+	 }
 }
