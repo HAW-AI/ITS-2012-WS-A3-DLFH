@@ -18,15 +18,15 @@ public class SendSecureFile {
 		byte[] signedAesKey = rsa.signAesKey(aesKey);
 		byte[] encryptedAesKey = rsa.encryptAesKey(aesKey);
 		try {
-		File ssfFile = new File("test.ssf");
-		FileOutputStream ssfFos = new FileOutputStream(ssfFile);
-		DataOutputStream ssfDos = new DataOutputStream(ssfFos);
-		ssfDos.writeInt(encryptedAesKey.length);
-		ssfDos.write(encryptedAesKey);
-		ssfDos.writeInt(signedAesKey.length);
-		ssfDos.write(signedAesKey);
-		ssfDos.write(encryptedData);
-		ssfDos.close();
+			File ssfFile = new File("test.ssf");
+			FileOutputStream ssfFos = new FileOutputStream(ssfFile);
+			DataOutputStream ssfDos = new DataOutputStream(ssfFos);
+			ssfDos.writeInt(encryptedAesKey.length);
+			ssfDos.write(encryptedAesKey);
+			ssfDos.writeInt(signedAesKey.length);
+			ssfDos.write(signedAesKey);
+			ssfDos.write(encryptedData);
+			ssfDos.close();
 		} catch (IOException e) {
 			System.out.println("An error occurred while writing ssf file");
 			//e.printStackTrace();
