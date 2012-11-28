@@ -37,15 +37,13 @@ public class AES {
 		return skey;
 	}
 	
-	public byte[] encrypt(String plainData){	
+	public byte[] encrypt(byte[] plainData){	
 		Cipher cipher;
 	    byte[] encData = null;
 		try {
 			cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, skey);
-			byte[] plain = plainData.getBytes();
-			System.out.println("Daten: "+new String(plain));
-			encData = cipher.doFinal(plain);
+			encData = cipher.doFinal(plainData);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

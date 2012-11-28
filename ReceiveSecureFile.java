@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -30,14 +31,17 @@ public class ReceiveSecureFile {
 				byte[] sigBuffer = new byte[sigLength];
 				ssfDis.read(sigBuffer);
 				
-				byte[] encDataBuffer = new byte[ssfDis.available()]; //TODO not reliable?
-				ssfDis.read(encDataBuffer);
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				while(ssfDis.available() != 0){
+					baos.write(ssfDis.readByte());
+				}
+				System.out.println("Read data "+baos.toString());
 				ssfDis.close();
 
 				RSA rsa = RSA.create(pubKeyPath, prvKeyPath);
 				SecretKey aesKey = rsa.decryptAesKey(skeyBuffer);
 				AES aes = AES.create(aesKey);
-				byte[] decData = aes.decrypt(encDataBuffer);
+				byte[] decData = aes.decrypt(baos.toByteArray());
 				
 				File dataFile = new File(outputDataPath);
 				FileOutputStream dataFis = new FileOutputStream(dataFile);

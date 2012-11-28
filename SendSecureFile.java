@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -23,16 +24,16 @@ public class SendSecureFile {
 				FileInputStream plainDataFis = new FileInputStream(plainDataFile);
 				DataInputStream plainDataDis = new DataInputStream(plainDataFis);
 
-				StringBuffer dataBuffer = new StringBuffer();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				while(plainDataDis.available() != 0){
-					dataBuffer.append((char)plainDataDis.read()); //TODO casting is ugly, readChar won't work...
+					baos.write(plainDataDis.readByte());
 				}
-				System.out.println("Read data"+dataBuffer.toString());
+				System.out.println("Read data "+baos.toString());
 				plainDataDis.close();
 				
 				RSA rsa = RSA.create(pubKeyPath, prvKeyPath);
 				AES aes = AES.create(128);
-				byte[] encryptedData = aes.encrypt(dataBuffer.toString());
+				byte[] encryptedData = aes.encrypt(baos.toByteArray());
 				SecretKey aesKey = aes.getSkey();
 				byte[] signedAesKey = rsa.signAesKey(aesKey);
 				byte[] encryptedAesKey = rsa.encryptAesKey(aesKey);
@@ -46,11 +47,11 @@ public class SendSecureFile {
 				ssfDos.write(signedAesKey);
 				ssfDos.write(encryptedData);
 				ssfDos.close();
+				System.out.println("SSF file successfully created");
 			} catch (IOException e) {
 				System.out.println("An error occurred while writing ssf file");
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
-			System.out.println("SSF file successfully created");
 		} else {
 			System.out.println("Please enter 4 argument: <privat key> <public key> <plain data> <output file>");
 		}
