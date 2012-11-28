@@ -66,7 +66,7 @@ public class AES {
 		return encData;
 	}
 	
-	public String decrypt(byte[] encData){
+	public byte[] decrypt(byte[] encData){
 	    Cipher cipher;
 	    byte[] decData = null;
 		try {
@@ -89,6 +89,6 @@ public class AES {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		return new String(decData);
+		return decData;
 	}
 }

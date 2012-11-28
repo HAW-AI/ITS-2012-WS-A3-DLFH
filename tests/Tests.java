@@ -13,8 +13,8 @@ public class Tests {
 	public void testAes128() {
 		String plainData = "Test String";
 		AES aes = AES.create(128);
-		String decData = aes.decrypt(aes.encrypt(plainData));
-		assertTrue(decData.equals(plainData));
+		byte[] decData = aes.decrypt(aes.encrypt(plainData));
+		assertTrue(plainData.equals(new String(decData)));
 	}
 	
 	@Test

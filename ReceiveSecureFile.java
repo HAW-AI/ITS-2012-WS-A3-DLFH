@@ -37,14 +37,14 @@ public class ReceiveSecureFile {
 				RSA rsa = RSA.create(pubKeyPath, prvKeyPath);
 				SecretKey aesKey = rsa.decryptAesKey(skeyBuffer);
 				AES aes = AES.create(aesKey);
-				String decData = aes.decrypt(encDataBuffer);
+				byte[] decData = aes.decrypt(encDataBuffer);
 				
 				File dataFile = new File(outputDataPath);
 				FileOutputStream dataFis = new FileOutputStream(dataFile);
 				DataOutputStream dataDis = new DataOutputStream(dataFis);
-				dataDis.writeChars(decData);
+				dataDis.write(decData);
 				dataDis.close();
-				System.out.println(decData);
+				System.out.println(new String(decData));
 				
 				if(rsa.verifyAesKey(aesKey.getEncoded(), sigBuffer)){
 					System.out.println("Verification successfull");
