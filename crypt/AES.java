@@ -2,7 +2,6 @@ package crypt;
 import java.security.*;
 
 import javax.crypto.*;
-import javax.crypto.spec.*;
 
 public class AES {
 	SecretKey skey;
@@ -92,10 +91,9 @@ public class AES {
       return encData; //TODO +encRest
 	}
 	
-	public String decrypt(byte[] encData, byte[] raw_key){
+	public String decrypt(byte[] encData){
 		  // sollen die Daten wieder entschlüsselt werden, so muss zuerst
 	      // aus der Bytefolge eine neue AES-Schlüsselspezifikation erzeugt werden
-	      SecretKeySpec skspec = new SecretKeySpec(raw_key, "AES");
 		// mit diesem Parameter wird nun die AES-Chiffre ein zweites Mal,
 	      // nun aber im DECRYPT MODE initialisiert (inkl. AlgorithmParameters)
 	      Cipher cipher;
@@ -104,7 +102,7 @@ public class AES {
 		try {
 			cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			//AlgorithmParameters ap = cipher.getParameters();
-			cipher.init(Cipher.DECRYPT_MODE, skspec);
+			cipher.init(Cipher.DECRYPT_MODE, skey);
 
 
 			// und die Daten entschlüsselt
