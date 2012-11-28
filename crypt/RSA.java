@@ -198,7 +198,7 @@ public class RSA {
 		    Signature AesSig = null;
 		    byte[] signature = null;
 		    try {
-		      AesSig = Signature.getInstance("SHA1withAES");
+		      AesSig = Signature.getInstance("SHA1withRSA");
 		    } catch (NoSuchAlgorithmException ex) {
 		    	System.out.println("Algorithm not found");
 		    }
