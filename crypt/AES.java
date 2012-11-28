@@ -9,7 +9,7 @@ import javax.crypto.spec.*;
  * Verschlüsseln von beliebigen Daten.
  */
 public class AES {
-	int keyLength = 128;
+	int keyLength;
 	
 	private AES (int keyLength){
 		this.keyLength = keyLength;
