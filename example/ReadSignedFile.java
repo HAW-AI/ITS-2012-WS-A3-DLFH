@@ -56,6 +56,7 @@ public class ReadSignedFile extends Object {
       pubKeyEnc = new byte[len];
       // der öffentliche Schlüssel
       is.read(pubKeyEnc);
+      is.close();
     } catch (IOException ex) {
       Error("Fehler beim Lesen der signierten Nachricht!", ex);
     }
