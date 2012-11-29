@@ -8,14 +8,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Input {
-	
+
 	DataInputStream dis;
-	
-	private Input(DataInputStream dis){
+
+	private Input(DataInputStream dis) {
 		this.dis = dis;
 	}
-	
-	public static Input create(String FilePath){
+
+	public static Input create(String FilePath) {
 		DataInputStream dis = null;
 		try {
 			dis = new DataInputStream(new FileInputStream(new File(FilePath)));
@@ -26,7 +26,7 @@ public class Input {
 		return new Input(dis);
 	}
 
-	public int readLength(){
+	public int readLength() {
 		int length = -1;
 		try {
 			length = dis.readInt();
@@ -36,8 +36,8 @@ public class Input {
 		}
 		return length;
 	}
-	
-	public byte[] readByLength(int length){
+
+	public byte[] readByLength(int length) {
 		byte[] buffer = new byte[length];
 		try {
 			dis.read(buffer);
@@ -47,11 +47,11 @@ public class Input {
 		}
 		return buffer;
 	}
-	
-	public byte[] readRemaining(){
+
+	public byte[] readRemaining() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			while(dis.available() != 0){
+			while (dis.available() != 0) {
 				baos.write(dis.readByte());
 			}
 		} catch (IOException e) {
@@ -60,8 +60,8 @@ public class Input {
 		}
 		return baos.toByteArray();
 	}
-	
-	public void close(){
+
+	public void close() {
 		try {
 			dis.close();
 		} catch (IOException e) {

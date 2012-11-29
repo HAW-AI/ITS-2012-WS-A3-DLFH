@@ -7,14 +7,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class Output {
-	
+
 	DataOutputStream dos;
-	
-	private Output(DataOutputStream dos){
+
+	private Output(DataOutputStream dos) {
 		this.dos = dos;
 	}
-	
-	public static Output create(String filePath){
+
+	public static Output create(String filePath) {
 		DataOutputStream dos = null;
 		try {
 			dos = new DataOutputStream(new FileOutputStream(new File(filePath)));
@@ -25,7 +25,7 @@ public class Output {
 		return new Output(dos);
 	}
 
-	public void writeInt(int value){
+	public void writeInt(int value) {
 		try {
 			dos.writeInt(value);
 		} catch (IOException e) {
@@ -33,8 +33,8 @@ public class Output {
 			e.printStackTrace();
 		}
 	}
-	
-	public void write(byte[] data){
+
+	public void write(byte[] data) {
 		try {
 			dos.write(data);
 		} catch (IOException e) {
@@ -42,8 +42,8 @@ public class Output {
 			e.printStackTrace();
 		}
 	}
-	
-	public void close(){
+
+	public void close() {
 		try {
 			dos.close();
 		} catch (IOException e) {

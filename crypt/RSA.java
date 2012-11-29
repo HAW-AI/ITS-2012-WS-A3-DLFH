@@ -24,189 +24,184 @@ import util.Input;
 import util.Output;
 
 public class RSA {
-	
+
 	PublicKey pubKey;
 	PrivateKey prvKey;
 
-	private RSA(PublicKey pubKey, PrivateKey prvKey){
+	private RSA(PublicKey pubKey, PrivateKey prvKey) {
 		this.pubKey = pubKey;
 		this.prvKey = prvKey;
 	}
-	
-	public static RSA create(int keysize){
+
+	public static RSA create(int keysize) {
 		KeyPair keypair = generateKeyPair(keysize);
 		return new RSA(keypair.getPublic(), keypair.getPrivate());
 	}
-	
-	public static RSA create(String pubKeyPath, String prvKeyPath){
+
+	public static RSA create(String pubKeyPath, String prvKeyPath) {
 		PublicKey pubKey = toPubKey(readKey(pubKeyPath));
 		PrivateKey prvKey = toPrvKey(readKey(prvKeyPath));
 		return new RSA(pubKey, prvKey);
 	}
-	
-	  public static KeyPair generateKeyPair(int keysize) {
-		  	KeyPair keyPair = null;
-		    try {
-		    	System.out.println("Generating keys");
-		      KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		      gen.initialize(keysize);
-		      keyPair = gen.generateKeyPair();
-		    } catch (NoSuchAlgorithmException e) {
-				System.out.println("Algorithm not found");
-		    	//e.printStackTrace();
-		    }
-			return keyPair;
-		  }
-	  
-	  private static byte[] readKey(String keyPath){
-		  Input in = Input.create(keyPath);
-		  in.readByLength(in.readLength());
-		  byte[] key = in.readByLength(in.readLength());
-		  return key;
-	  }
-	  
-	  private static PublicKey toPubKey(byte[] key){
-		  	PublicKey pubKey = null;
-			try {
-				X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(key);
-				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-				pubKey = keyFactory.generatePublic(pubKeySpec);
-			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Algorithm not found");
-				e.printStackTrace();
-			} catch (InvalidKeySpecException e) {
-				System.out.println("Key specifications are wrong");
-				e.printStackTrace();
-			}
-			return pubKey;
-	  }
-	  
-	  private static PrivateKey toPrvKey(byte[] key){
-			PrivateKey prvKey = null;
-			try {
-				PKCS8EncodedKeySpec prvKeySpec = new PKCS8EncodedKeySpec(key);
-				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-				prvKey = keyFactory.generatePrivate(prvKeySpec);
-			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Algorithm not found");
-				e.printStackTrace();
-			} catch (InvalidKeySpecException e) {
-				System.out.println("Key specifications are wrong");
-				e.printStackTrace();
-			}
-			return prvKey;
-	  }
-	  
-	 
-	  public void writeKeysToFile(String pubKeyPath, String prvKeyPath, String ownerName){
-		  writeKey(pubKey.getEncoded(),pubKeyPath, ownerName);
-		  writeKey(prvKey.getEncoded(), prvKeyPath, ownerName);
-	  }
-	  
-	  private void writeKey(byte[] key, String keyPath, String ownerName){
-			Output out = Output.create(keyPath);
-			out.writeInt(ownerName.length());
-			out.write(ownerName.getBytes());
-			out.writeInt(key.length);
-			out.write(key);
-			out.close(); 
-	  }
-	  
-	 public byte[] signAesKey(SecretKey skey){
-		    // als erstes erzeugen wir die Signatur
-		    Signature AesSig = null;
-		    byte[] signature = null;
-		    try {
-		      AesSig = Signature.getInstance("SHA1withRSA");
-		    } catch (NoSuchAlgorithmException ex) {
-		    	System.out.println("Algorithm not found");
-		    }
 
-		    try {
-		      // zum Signieren benötigen wir den geheimen Schlüssel
-		    	AesSig.initSign(prvKey);
-		    } catch (InvalidKeyException ex) {
-		      System.out.println("Key is invalid");
-		    }
-
-		    try {
-		      AesSig.update(skey.getEncoded());
-		      signature = AesSig.sign();
-		    } catch (SignatureException ex) {
-		      System.out.println("An error occurred while signing a secret key ");
-		    }
-		    return signature;
-	 }
-	 
-	public boolean verifyAesKey(byte[] skey ,byte[] signature) {
-	    boolean result = false;
+	public static KeyPair generateKeyPair(int keysize) {
+		KeyPair keyPair = null;
 		try {
-		Signature AesSig = Signature.getInstance("SHA1withRSA");
-		AesSig.initVerify(pubKey);
-		AesSig.update(skey);
-		result = AesSig.verify(signature);
-		} catch (SignatureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Generating keys");
+			KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+			gen.initialize(keysize);
+			keyPair = gen.generateKeyPair();
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Algorithm not found");
+			e.printStackTrace();
+		}
+		return keyPair;
+	}
+
+	private static byte[] readKey(String keyPath) {
+		Input in = Input.create(keyPath);
+		in.readByLength(in.readLength());
+		byte[] key = in.readByLength(in.readLength());
+		return key;
+	}
+
+	private static PublicKey toPubKey(byte[] key) {
+		PublicKey pubKey = null;
+		try {
+			X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(key);
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			pubKey = keyFactory.generatePublic(pubKeySpec);
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Algorithm not found");
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			System.out.println("Key specifications are wrong");
+			e.printStackTrace();
+		}
+		return pubKey;
+	}
+
+	private static PrivateKey toPrvKey(byte[] key) {
+		PrivateKey prvKey = null;
+		try {
+			PKCS8EncodedKeySpec prvKeySpec = new PKCS8EncodedKeySpec(key);
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			prvKey = keyFactory.generatePrivate(prvKeySpec);
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Algorithm not found");
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			System.out.println("Key specifications are wrong");
+			e.printStackTrace();
+		}
+		return prvKey;
+	}
+
+	public void writeKeysToFile(String pubKeyPath, String prvKeyPath,
+			String ownerName) {
+		writeKey(pubKey.getEncoded(), pubKeyPath, ownerName);
+		writeKey(prvKey.getEncoded(), prvKeyPath, ownerName);
+	}
+
+	private void writeKey(byte[] key, String keyPath, String ownerName) {
+		Output out = Output.create(keyPath);
+		out.writeInt(ownerName.length());
+		out.write(ownerName.getBytes());
+		out.writeInt(key.length);
+		out.write(key);
+		out.close();
+	}
+
+	public byte[] signAesKey(SecretKey skey) {
+		byte[] signedData = null;
+		try {
+			Signature signer = Signature.getInstance("SHA1withRSA");
+			signer.initSign(prvKey);
+			signer.update(skey.getEncoded());
+			signedData = signer.sign();
+		} catch (SignatureException e) {
+			System.out.println("An error occurred while signing a secret key");
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Key is invalid");
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Algorithm not found");
+			e.printStackTrace();
+		}
+		return signedData;
+	}
+
+	public boolean verifyAesKey(byte[] skey, byte[] signature) {
+		boolean result = false;
+		try {
+			Signature signer = Signature.getInstance("SHA1withRSA");
+			signer.initVerify(pubKey);
+			signer.update(skey);
+			result = signer.verify(signature);
+		} catch (SignatureException e) {
+			System.out
+					.println("An error occurred while verifying a secret key");
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			System.out.println("Key is invalid");
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Algorithm not found");
 			e.printStackTrace();
 		}
 		return result;
 	}
-	 
-	 public byte[] encryptAesKey(SecretKey skey){
-	    Cipher cipher;
-	    byte[] encData = null;
+
+	public byte[] encryptAesKey(SecretKey skey) {
+		Cipher cipher;
+		byte[] encData = null;
 		try {
 			cipher = Cipher.getInstance("RSA");
 			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
 			byte[] plain = skey.getEncoded();
 			encData = cipher.doFinal(plain);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Algorithm not found");
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Padding not possible");
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Key is invalid");
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Block size is invalid");
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Padding of data is invalid");
 			e.printStackTrace();
 		}
-	    return encData;
-	 }
+		return encData;
+	}
 
 	public SecretKey decryptAesKey(byte[] encSkey) {
 		Cipher cipher;
-	      SecretKey decSkey = null;
+		SecretKey decSkey = null;
 		try {
 			cipher = Cipher.getInstance("RSA");
 			cipher.init(Cipher.DECRYPT_MODE, prvKey);
 			byte[] decSkeyByte = cipher.doFinal(encSkey);
 			decSkey = new SecretKeySpec(decSkeyByte, "AES");
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Algorithm not found");
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Padding not possible");
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Key is invalid");
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Block size is invalid");
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Padding of data is invalid");
 			e.printStackTrace();
 		}
 		return decSkey;
