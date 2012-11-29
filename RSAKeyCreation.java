@@ -9,6 +9,6 @@ public class RSAKeyCreation {
 		System.out.println("Owner of keypair: "+args[0]);
 		String ownerName = args[0];
 		RSA rsa = RSA.create(1024);
-		rsa.writeKeysToFile("", "", ownerName);
+		rsa.writeKeysToFile(ownerName+".pub", ownerName+".prv", ownerName);
 	}
 }

@@ -1,12 +1,5 @@
 package crypt;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -27,6 +20,9 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import util.Input;
+import util.Output;
+
 public class RSA {
 	
 	PublicKey pubKey;
@@ -43,8 +39,8 @@ public class RSA {
 	}
 	
 	public static RSA create(String pubKeyPath, String prvKeyPath){
-		PublicKey pubKey = readPubKeyFile(pubKeyPath);
-		PrivateKey prvKey = readPrvKeyFile(prvKeyPath);
+		PublicKey pubKey = toPubKey(readKey(pubKeyPath));
+		PrivateKey prvKey = toPrvKey(readKey(prvKeyPath));
 		return new RSA(pubKey, prvKey);
 	}
 	
@@ -62,137 +58,59 @@ public class RSA {
 			return keyPair;
 		  }
 	  
-	  private static PublicKey readPubKeyFile(String pubKeyPath){
+	  private static byte[] readKey(String keyPath){
+		  Input in = Input.create(keyPath);
+		  in.readByLength(in.readLength());
+		  byte[] key = in.readByLength(in.readLength());
+		  return key;
+	  }
+	  
+	  private static PublicKey toPubKey(byte[] key){
 		  	PublicKey pubKey = null;
 			try {
-				File pubKeyFile = new File(pubKeyPath);
-				FileInputStream pubKeyFis = new FileInputStream(pubKeyFile);
-				DataInputStream pubKeyDis = new DataInputStream(pubKeyFis);
-
-				int OwnerLength = pubKeyDis.readInt();
-				byte[] OwnerBuffer = new byte[OwnerLength];
-				pubKeyDis.read(OwnerBuffer);
-				String Owner = new String(OwnerBuffer);
-				System.out.println("Key length: "+OwnerLength);
-				System.out.println(Owner);
-				
-				int KeyLength = pubKeyDis.readInt();
-				byte[] KeyBuffer = new byte[KeyLength];
-				pubKeyDis.readFully(KeyBuffer);
-				System.out.println("Key length: "+KeyBuffer.length);
-				pubKeyDis.close();
-				
-				X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(KeyBuffer);
+				X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(key);
 				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 				pubKey = keyFactory.generatePublic(pubKeySpec);
-				System.out.println("Pubic key read:"+pubKey.toString());
 			} catch (NoSuchAlgorithmException e) {
 				System.out.println("Algorithm not found");
-				//e.printStackTrace();
+				e.printStackTrace();
 			} catch (InvalidKeySpecException e) {
 				System.out.println("Key specifications are wrong");
-				//e.printStackTrace();
-			} catch (FileNotFoundException e) {
-				System.out.println("Public key file could not be found");
-				//e.printStackTrace();
-			} catch (IOException e) {
-				System.out.println("An error occurred while reading public key file");
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 			return pubKey;
 	  }
 	  
-	  private static PrivateKey readPrvKeyFile(String prvKeyPath){
-		  PrivateKey prvKey = null;
-		  try {
-				File prvKeyFile = new File(prvKeyPath);
-				FileInputStream prvKeyFis = new FileInputStream(prvKeyFile);
-				DataInputStream prvKeyDis = new DataInputStream(prvKeyFis);
-
-				int OwnerLength = prvKeyDis.readInt();
-				byte[] OwnerBuffer = new byte[OwnerLength];
-				prvKeyDis.read(OwnerBuffer);
-				String Owner = new String(OwnerBuffer);
-				System.out.println(Owner);
-				
-				int KeyLength = prvKeyDis.readInt();
-				byte[] KeyBuffer = new byte[KeyLength];
-				prvKeyDis.read(KeyBuffer);
-				System.out.println("Key length: "+KeyBuffer.length);
-				prvKeyDis.close();
-				
-				PKCS8EncodedKeySpec prvKeySpec = new PKCS8EncodedKeySpec(KeyBuffer);
+	  private static PrivateKey toPrvKey(byte[] key){
+			PrivateKey prvKey = null;
+			try {
+				PKCS8EncodedKeySpec prvKeySpec = new PKCS8EncodedKeySpec(key);
 				KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 				prvKey = keyFactory.generatePrivate(prvKeySpec);
-				System.out.println("Pubic key read:"+prvKey.toString());
 			} catch (NoSuchAlgorithmException e) {
 				System.out.println("Algorithm not found");
-				//e.printStackTrace();
+				e.printStackTrace();
 			} catch (InvalidKeySpecException e) {
 				System.out.println("Key specifications are wrong");
 				e.printStackTrace();
-			} catch (FileNotFoundException e) {
-				System.out.println("Public key file could not be found");
-				//e.printStackTrace();
-			} catch (IOException e) {
-				System.out.println("An error occurred while reading public key file");
-				//e.printStackTrace();
 			}
 			return prvKey;
 	  }
 	  
+	 
 	  public void writeKeysToFile(String pubKeyPath, String prvKeyPath, String ownerName){
-		  writePublicKey(pubKeyPath, ownerName);
-		  writePrivateKey(prvKeyPath, ownerName);
+		  writeKey(pubKey.getEncoded(),pubKeyPath, ownerName);
+		  writeKey(prvKey.getEncoded(), prvKeyPath, ownerName);
 	  }
 	  
-	  private void writePublicKey(String pubKeyPath, String ownerName){
-		try {
-			System.out.println("Writing public keyfile. Keyformat: "+this.pubKey.getFormat());
-			System.out.println(this.pubKey);
-			byte[] pubKey = this.pubKey.getEncoded();
-			File pubKeyFile = new File(pubKeyPath+ownerName+".pub");
-			FileOutputStream pubKeyFos = new FileOutputStream(pubKeyFile);
-			DataOutputStream pubKeyDos = new DataOutputStream(pubKeyFos);
-			pubKeyDos.writeInt(ownerName.length());
-			pubKeyDos.writeBytes(ownerName);
-			pubKeyDos.writeInt(pubKey.length);
-			System.out.println("Key length: "+pubKey.length);
-			pubKeyDos.write(pubKey);
-			pubKeyDos.close();
-			System.out.println("Keyfiles successfully created");
-		} catch (FileNotFoundException e) {
-			System.out.println("Public key file could not be created");
-			//e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("An error occurred while writing public key file");
-			//e.printStackTrace();
-		}
+	  private void writeKey(byte[] key, String keyPath, String ownerName){
+			Output out = Output.create(keyPath);
+			out.writeInt(ownerName.length());
+			out.write(ownerName.getBytes());
+			out.writeInt(key.length);
+			out.write(key);
+			out.close(); 
 	  }
-	  
-	 private void writePrivateKey(String prvKeyPath, String ownerName){
-		 try {
-		 System.out.println("Writing private keyfile. Keyformat "+this.prvKey.getFormat());
-			System.out.println(this.prvKey);
-			byte[] prvKey = this.prvKey.getEncoded();
-			File prvKeyFile = new File(prvKeyPath+ownerName+".prv");
-			FileOutputStream prvKeyFos = new FileOutputStream(prvKeyFile);
-			DataOutputStream prvKeyDos = new DataOutputStream(prvKeyFos);
-			prvKeyDos.writeInt(ownerName.length());
-			prvKeyDos.writeBytes(ownerName);
-			prvKeyDos.writeInt(prvKey.length);
-			System.out.println("Key length: "+prvKey.length);
-			prvKeyDos.write(prvKey);
-			prvKeyDos.close();
-			System.out.println("Keyfile successfully created");
-		} catch (FileNotFoundException e) {
-			System.out.println("Private key file could not be created");
-			//e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("An error occurred while writing private key file");
-			//e.printStackTrace();
-		}
-	 }
 	  
 	 public byte[] signAesKey(SecretKey skey){
 		    // als erstes erzeugen wir die Signatur
